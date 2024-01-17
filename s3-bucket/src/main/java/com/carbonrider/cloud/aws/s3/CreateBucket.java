@@ -1,29 +1,62 @@
 package com.carbonrider.cloud.aws.s3;
 
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 
 public class CreateBucket {
 
-    public static final String AWS_ACCESS_KEY = System.getenv("AWS_ACCESS_KEY");
+    public static final String AWS_ACCESS_KEY = "MDXHZT4421EQTDJWZ09Y";
 
-    public static final String AWS_SECRET_KEY = System.getenv("AWS_SECRET_KEY");
+    public static final String AWS_SECRET_KEY = "uij8TjcGgpIw9P82EHBp1zh7eEz4yCdeppLH7qIW";
 
     public static void main(String[] args) {
-        AwsCredentials credentials = AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY);
+        // S3 endpoint parameters.
+        final String s3Endpoint = "https://s3.ap-southeast-2.wasabisys.com";
+        final String region = "ap-southeast-2";
 
-        S3Client s3Client = S3Client.builder().region(Region.of("us-east-1")).credentialsProvider(
-                StaticCredentialsProvider.create(credentials)
-        ).build();
+        // Use the following code if you would like to add your access and secret keys in the code.
+         AWSCredentialsProvider credentials =
+                 new AWSStaticCredentialsProvider(
+                         new BasicAWSCredentials(AWS_ACCESS_KEY,AWS_SECRET_KEY));
 
-        CreateBucketRequest bucketRequest = CreateBucketRequest.builder().bucket("carbonrider-new-aws").build();
+        // Use the following code to fetch the aws profile credentials.
+//        AWSCredentialsProvider credentials = new
+//
+//                ProfileCredentialsProvider("wasabi");
 
-        s3Client.createBucket(bucketRequest);
+        // connect to Wasabi s3
+        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(new
 
-        System.out.println("Bucket created !!!");
+                        AwsClientBuilder.EndpointConfiguration(s3Endpoint, region))
+                .withCredentials(credentials)
+                .build();
+//s3.deleteBucket("java-bucket-rv");
+//        s3.createBucket("java-bucket-rv");
+        s3.doesBucketExistV2("java-bucket-rv");
+        final String bucketName = "java-bucket-rv";
+        final String keyName = "1.TKCT_PYC_04.docx";
+        final String filePath = "C:\\Users\\PC05\\Downloads\\1.TKCT_PYC_04.docx";
+
+        // Upload object to bucket
+        s3.putObject(bucketName,keyName,new File(filePath));
+        System.out.println("success create bucket");
     }
+
+
 }
